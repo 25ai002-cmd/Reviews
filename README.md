@@ -12,32 +12,33 @@ A lightweight, mobile-first, responsive web application engineered specifically 
      - `?placeid=` (Google Place ID, default: `ChIJ67svB4SDXjkR9yp6UifRj84`)
      - `?name=` (Business Name, default: `Our Business`)
      - `?category=` (`clinic`, `cafe`, `salon`, `retail`, `general`, default: `general`)
+     - `?keywords=` (Optional comma-separated real-world keywords, e.g. `Dr.+Sharma,short+wait,spotless+clinic`)
    - Constructs redirect target automatically:
      ```
      https://search.google.com/local/writereview?placeid=${placeid}
      ```
 
-2. **Anti-Spam Combinatorial Review Engine:**
-   - Generates unique, authentic reviews on initial load using a modular sentence structure (`Openers` × `Category Highlights` × `Secondary Connectors` × `Closings`).
+2. **Google Anti-Gating Compliant (100% Policy-Safe):**
+   - Strictly avoids "review gating": tapping 1, 2, 3, 4, or 5 stars **never** blocks the customer from proceeding to Google.
+   - For 1–3 stars, the combinatorial engine adaptively generates balanced, constructive feedback so the user can voice honest observations directly on Google without risking Google review profile penalties.
+
+3. **Anti-Spam Combinatorial Engine with Entity Grounding:**
+   - Generates unique, authentic reviews on initial load using modular sentence structure (`Openers` × `Business Name Anchors` × `Category Highlights` × `Real Keywords` × `Closings`).
    - Category-specific vocabulary tailored to clinics, cafes, salons, retail shops, and professional services.
    - Built-in hash memory prevents repeating recent combinations on sequential taps.
    - **"↻ New Idea"** button instantly shuffles a fresh combination.
 
-3. **Editable Review Box & Quick-Tap Keyword Chips:**
+4. **Mobile Pop-Up Blocker Proof (Same-Tab Navigation):**
+   - Utilizes `window.location.href = targetUrl` (same-tab navigation) to eliminate iOS Safari and Android Chrome pop-up blocker issues that plague delayed `window.open()` calls.
+   - Includes direct fallback button inside the copied toast overlay for instant manual override.
+
+5. **Editable Review Box & Quick-Tap Keyword Chips:**
    - Pre-populated `<textarea>` allows full user customization.
-   - 5 category-tailored keyword chips (e.g. `+ Polite staff`, `+ Quick service`, `+ Clean & hygienic`) that toggle in and out of the review naturally without duplications.
+   - 5 category-tailored keyword chips + dynamic custom keyword chips from URL parameters that toggle in and out naturally without duplication.
    - Live character count, word count, and optimal length indicator.
-   - 5-Star interactive rating selector with feedback sentiments.
 
-4. **Seamless "Copy & Redirect" Flow:**
-   - Prominent, thumb-friendly **"Copy & Open Google Review"** button with Google branding and pulse shine.
-   - Modern `navigator.clipboard` with an automatic hidden `document.execCommand('copy')` fallback for 100% compatibility across iOS Safari, Android Chrome, and in-app WebViews.
-   - Haptic vibration feedback (`navigator.vibrate`).
-   - Visual celebration confetti burst.
-   - Polished backdrop toast modal confirming copy and auto-redirecting to Google.
-
-5. **Built-in NFC Tag Link Configurator:**
-   - Tap the gear icon in the top header to preview presets or generate custom NFC URLs to encode directly into your cards.
+6. **Built-in NFC Tag Link Configurator:**
+   - Tap the gear icon in the top header to preview presets or generate custom NFC URLs with keywords to encode directly into your cards.
 
 ---
 
@@ -47,10 +48,10 @@ A lightweight, mobile-first, responsive web application engineered specifically 
 2. Open NFC Tools and tap **Write** > **Add a record** > **URL / URI**.
 3. Enter your hosted URL with query parameters:
    ```text
-   https://your-domain.com/?placeid=ChIJ...&name=Apex%20Dental&category=clinic
+   https://your-domain.com/?placeid=ChIJ67svB4SDXjkR9yp6UifRj84&name=Dr.+Sharma+Clinic&category=clinic&keywords=Dr.+Sharma,short+wait,spotless+rooms
    ```
 4. Tap **Write** and tap the physical card against the top of your phone.
-5. That's it! Any phone that taps the card will now launch this instant review flow.
+5. That's it! Any phone that taps the card will launch this instant review flow.
 
 ---
 
@@ -58,5 +59,5 @@ A lightweight, mobile-first, responsive web application engineered specifically 
 
 - `index.html`: Responsive, mobile-first single-page application.
 - `style.css`: Modern styling optimized for iOS Safari (notch safe-area, no auto-zoom) and Android.
-- `reviews-engine.js`: Combinatorial anti-spam review engine and category dictionaries.
+- `reviews-engine.js`: Combinatorial anti-spam review engine with entity grounding and rating adaptation.
 - `app.js`: Application controller, clipboard handler, confetti, and URL parameter logic.

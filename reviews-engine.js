@@ -1,7 +1,7 @@
 /**
- * Anti-Spam Combinatorial Review Generator Engine
- * Generates natural, human-sounding, category-tailored reviews.
- * Combinatorics: Openers × Connectors × Highlights × Closings => Hundreds of thousands of unique variants.
+ * Anti-Spam Combinatorial Review Generator Engine (v2 - High Specificity & Anti-Gating)
+ * Generates natural, human-sounding, category-tailored reviews with real business entity grounding.
+ * Combinatorics: Openers × Entity Anchors × Specific Highlights × Secondary Connectors × Closings.
  */
 
 const REVIEWS_ENGINE = (function() {
@@ -12,33 +12,34 @@ const REVIEWS_ENGINE = (function() {
       badge: 'Healthcare Clinic',
       icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>`,
       themeColor: '#0ea5e9',
+      defaultKeywords: ['Dr. Miller', 'painless treatment', 'short wait time', 'hygienic rooms'],
       chips: [
-        { label: '+ Polite staff', phrase: 'The front desk staff was courteous and welcoming.' },
-        { label: '+ Short wait time', phrase: 'Appreciated having almost zero waiting time.' },
-        { label: '+ Clean & hygienic', phrase: 'The clinic and treatment rooms are spotless and thoroughly sanitized.' },
-        { label: '+ Thorough explanation', phrase: 'The doctor took the time to answer every question with patience.' },
-        { label: '+ Gentle care', phrase: 'Felt completely at ease and well cared for throughout the visit.' }
+        { label: '+ Polite staff', phrase: 'The front desk staff was courteous, polite, and welcoming.' },
+        { label: '+ Short wait time', phrase: 'Appreciated having almost zero waiting time before being called in.' },
+        { label: '+ Clean & hygienic', phrase: 'The clinic and treatment rooms are spotless, sanitized, and very reassuring.' },
+        { label: '+ Thorough explanation', phrase: 'The doctor took the time to answer every question with patience and clear advice.' },
+        { label: '+ Gentle care', phrase: 'Felt completely at ease and well cared for throughout the entire visit.' }
       ],
       openers: [
-        'Had a truly comfortable and reassuring appointment here recently.',
-        'Visiting a clinic can often feel stressful, but my visit here was smooth and pleasant from start to finish.',
-        'I recently came in for an appointment and was thoroughly impressed by the entire standard of care.',
-        'Extremely grateful for the wonderful care I received during my visit today.',
-        'Had a first-time consultation here and felt right at home immediately.',
-        'My recent visit here completely exceeded my expectations.',
-        'From the moment I scheduled my appointment to walking out the door, the service was top notch.',
-        'I have been here a few times now and the quality of care is consistently outstanding.',
-        'Came in for a checkup earlier today and had a very positive experience.',
+        'Had a truly comfortable and reassuring appointment at {NAME} recently.',
+        'Visiting a clinic can often feel stressful, but my visit to {NAME} was smooth and pleasant from start to finish.',
+        'I recently came in for an appointment at {NAME} and was thoroughly impressed by the high standard of care.',
+        'Extremely grateful for the wonderful medical care I received at {NAME} today.',
+        'Had a first-time consultation at {NAME} and felt right at ease immediately.',
+        'My recent visit to {NAME} completely exceeded my expectations.',
+        'From the moment I scheduled my appointment at {NAME} to walking out the door, the service was top notch.',
+        'I have visited {NAME} a few times now and the quality of care is consistently outstanding.',
+        'Came in for a checkup at {NAME} earlier today and had a very positive experience.',
         'Such a professional and compassionate medical practice.'
       ],
       highlights: [
-        'the doctor listened attentively to all my concerns and explained every treatment option in plain language.',
-        'the entire facility is spotlessly clean, modern, and very calming.',
-        'the nursing staff and assistants were gentle, reassuring, and exceptionally professional.',
-        'everything was handled on schedule without any unnecessary delays in the waiting room.',
-        'the diagnostic equipment was state-of-the-art and the staff made sure I felt relaxed throughout.',
+        'the doctor listened attentively to all my symptoms and explained the diagnosis with great clarity.',
+        'the entire facility is spotlessly clean, modern, and maintains the highest hygiene standards.',
+        'the nursing staff and assistants were gentle, reassuring, and exceptionally attentive.',
+        'everything was handled right on schedule with virtually zero unnecessary waiting room delays.',
+        'the diagnostic equipment was modern and they made sure I felt relaxed throughout the examination.',
         'they genuinely take time to treat you as an individual rather than rushing through the appointment.',
-        'the administrative check-in was seamless and all follow-up steps were communicated with great clarity.',
+        'the front-desk check-in was seamless and all prescription and follow-up steps were communicated clearly.',
         'their gentle touch and patient demeanor made the procedure completely painless and stress-free.'
       ],
       connectors: [
@@ -47,15 +48,29 @@ const REVIEWS_ENGINE = (function() {
         'In addition,',
         'Furthermore,',
         'I was particularly impressed that',
-        'The environment was soothing, and'
+        'The environment was calming, and'
       ],
       closings: [
-        'I would recommend this clinic without hesitation to anyone seeking quality healthcare.',
+        'I would recommend {NAME} without hesitation to anyone seeking quality healthcare.',
         'Truly grateful for the compassionate service—definitely my go-to clinic moving forward.',
         'Finding trustworthy and gentle doctors is rare; they definitely deserve 5 stars.',
-        'Thank you to the whole team for making this such a smooth and comforting experience!',
+        'Thank you to the whole team at {NAME} for making this such a smooth and comforting experience!',
         'Will definitely be returning for all future checkups.',
         'Highly recommended to all friends and family in the area.'
+      ],
+      constructiveOpeners: [
+        'Sharing some honest feedback following my recent visit to {NAME}.',
+        'Visited {NAME} recently and wanted to leave a balanced, candid review.',
+        'Here is my constructive feedback from my appointment at {NAME}.'
+      ],
+      constructiveHighlights: [
+        'while the staff was polite, the wait time was somewhat longer than anticipated.',
+        'the consultation was helpful, though I felt a bit rushed during the explanation of next steps.',
+        'the treatment was fine, but appointment scheduling and communication could be improved.'
+      ],
+      constructiveClosings: [
+        'Sharing this feedback in hopes of helping the clinic improve customer experience.',
+        'Hoping they take this constructive feedback on board for future patient visits.'
       ]
     },
 
@@ -64,6 +79,7 @@ const REVIEWS_ENGINE = (function() {
       badge: 'Artisan Cafe & Coffee',
       icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>`,
       themeColor: '#d97706',
+      defaultKeywords: ['pour-over', 'almond croissant', 'cozy seating', 'friendly barista'],
       chips: [
         { label: '+ Amazing coffee', phrase: 'The espresso blend was smooth, rich, and brewed to perfection.' },
         { label: '+ Cozy ambience', phrase: 'The atmosphere is warm, inviting, and wonderfully styled.' },
@@ -72,24 +88,24 @@ const REVIEWS_ENGINE = (function() {
         { label: '+ Great work vibe', phrase: 'Ideal place whether catching up with friends or getting some work done.' }
       ],
       openers: [
-        'Found my new favorite coffee spot in town!',
-        'Stopped by this charming cafe this morning and it absolutely brightened my day.',
-        'Popped in for a quick caffeine boost and was blown away by the quality.',
-        'Such a cozy and welcoming spot with an incredible atmosphere.',
-        'Had a wonderful experience visiting here over the weekend.',
-        'If you appreciate genuinely good coffee and warm hospitality, this place is a must.',
-        'Dropped in for breakfast and coffee, and everything hit the spot.',
-        'Came across this cafe recently and have already visited twice this week.',
-        'One of the best cafe experiences I have had in a very long time.'
+        'Found my new favorite coffee spot in town at {NAME}!',
+        'Stopped by {NAME} this morning and it absolutely brightened my day.',
+        'Popped into {NAME} for a caffeine boost and was blown away by the quality.',
+        '{NAME} is such a cozy and welcoming spot with an incredible atmosphere.',
+        'Had a wonderful experience visiting {NAME} over the weekend.',
+        'If you appreciate genuinely good specialty coffee and warm hospitality, {NAME} is a must-visit.',
+        'Dropped in at {NAME} for breakfast and coffee, and everything hit the spot.',
+        'Came across {NAME} recently and have already visited twice this week.',
+        'One of the best cafe experiences in the area.'
       ],
       highlights: [
-        'the coffee was brewed to perfection—smooth, flavorful, and rich.',
-        'the baristas were welcoming, passionate about their craft, and fast with orders.',
-        'the interior decor creates such a relaxing, cozy vibe with great natural lighting and seating.',
-        'the fresh pastries and food options paired wonderfully with our drinks.',
+        'the coffee was brewed to perfection—smooth, flavorful, and with great latte art.',
+        'the baristas were welcoming, passionate about their roast profiles, and fast with orders.',
+        'the interior decor creates such a relaxing, cozy vibe with comfortable seating and great natural light.',
+        'the fresh pastries and artisanal snacks paired wonderfully with our drinks.',
         'the background music was just right—neither too loud nor distracting, making it a perfect hangout.',
-        'their attention to detail in presentation and latte art was a lovely touch.',
-        'the menu had an impressive variety of specialty brews and dairy alternatives.'
+        'their attention to detail in presentation and prompt table service was lovely.',
+        'the menu had an impressive variety of specialty brews, pour-overs, and oat milk options.'
       ],
       connectors: [
         'To make it even better,',
@@ -100,11 +116,24 @@ const REVIEWS_ENGINE = (function() {
         'Everything tasted fresh, and'
       ],
       closings: [
-        'Already looking forward to my next morning visit!',
-        'Cannot recommend this gem enough to fellow coffee lovers.',
+        'Already looking forward to my next morning visit to {NAME}!',
+        'Cannot recommend {NAME} enough to fellow coffee lovers.',
         'An easy 5-star experience from start to finish.',
-        'Will definitely be making this my regular weekly coffee stop.',
-        'Kudos to the team for creating such a lovely neighborhood hangout!'
+        'Will definitely be making {NAME} my regular weekly coffee stop.',
+        'Kudos to the team at {NAME} for creating such a lovely neighborhood gem!'
+      ],
+      constructiveOpeners: [
+        'Sharing an honest review of my recent visit to {NAME}.',
+        'Wanted to leave some candid feedback regarding my experience at {NAME}.'
+      ],
+      constructiveHighlights: [
+        'the coffee flavor was decent, but the wait time was noticeably long during peak hours.',
+        'the space has great potential, though seating was a bit cramped and noisy during my visit.',
+        'the drinks were okay, but felt a bit pricey compared to the portion size.'
+      ],
+      constructiveClosings: [
+        'Hoping they can streamline table service during rush hours.',
+        'Leaving this feedback to help the management improve.'
       ]
     },
 
@@ -113,6 +142,7 @@ const REVIEWS_ENGINE = (function() {
       badge: 'Beauty & Wellness Salon',
       icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/><line x1="8.12" y1="8.12" x2="12" y2="12"/></svg>`,
       themeColor: '#ec4899',
+      defaultKeywords: ['hair stylist', 'scalp massage', 'balayage', 'consultation'],
       chips: [
         { label: '+ Expert stylist', phrase: 'My stylist is truly a master of their craft and listened closely to my goals.' },
         { label: '+ Loved the result', phrase: 'Walked out feeling so confident and completely in love with the results.' },
@@ -121,17 +151,17 @@ const REVIEWS_ENGINE = (function() {
         { label: '+ Premium products', phrase: 'Loved the high quality products they used; my hair/skin feels incredible.' }
       ],
       openers: [
-        'Walked out of my appointment today feeling like a million bucks!',
-        'Had an incredible pampering session here and could not be happier with the outcome.',
-        'I am usually very particular about salon appointments, but they completely exceeded my hopes.',
-        'Such a luxurious and rejuvenating experience from the moment I checked in.',
-        'Booked an appointment based on recommendations and it lived up to every bit of the hype.',
-        'First time visiting this salon and they have certainly earned a lifelong client.',
-        'Always look forward to my appointments here—the level of skill is unmatched.'
+        'Walked out of my appointment at {NAME} feeling like a million bucks!',
+        'Had an incredible pampering session at {NAME} and could not be happier with the outcome.',
+        'I am usually very particular about salon appointments, but {NAME} completely exceeded my hopes.',
+        'Such a luxurious and rejuvenating experience from the moment I checked in at {NAME}.',
+        'Booked an appointment at {NAME} based on recommendations and it lived up to every bit of the hype.',
+        'First time visiting {NAME} and they have certainly earned a loyal client.',
+        'Always look forward to my appointments at {NAME}—the level of skill is unmatched.'
       ],
       highlights: [
-        'my stylist took the time during our consultation to understand exactly the look I wanted.',
-        'the scalp massage and hair wash were so relaxing I almost fell asleep in the chair.',
+        'my stylist took the time during our consultation to understand exactly the cut and color I wanted.',
+        'the scalp massage and wash were so relaxing I almost fell asleep in the chair.',
         'their attention to detail, precision, and coloring technique were extraordinary.',
         'the salon space is chic, impeccably maintained, and feels like a boutique sanctuary.',
         'they used premium quality products that left my hair feeling silky, healthy, and revitalized.',
@@ -145,11 +175,24 @@ const REVIEWS_ENGINE = (function() {
         'On top of the great styling,'
       ],
       closings: [
-        'Have already received so many compliments today—thank you so much!',
-        'Deserves every bit of a 5-star rating; already booked my next appointment.',
-        'If you are looking for talented, caring professionals, look no further.',
+        'Have already received so many compliments today—thank you to the {NAME} team!',
+        'Deserves every bit of a 5-star rating; already booked my next appointment at {NAME}.',
+        'If you are looking for talented, caring professionals, look no further than {NAME}.',
         'Huge thanks to the team for the wonderful transformation and care!',
-        'Could not recommend this salon more highly!'
+        'Could not recommend {NAME} more highly!'
+      ],
+      constructiveOpeners: [
+        'Leaving honest feedback regarding my recent appointment at {NAME}.',
+        'Sharing my thoughts after a recent visit to {NAME}.'
+      ],
+      constructiveHighlights: [
+        'the stylist was friendly, but the final outcome was slightly different from what we discussed.',
+        'the service was okay, but the appointment started about 25 minutes behind schedule.',
+        'the salon was bustling, but communication regarding extra product charges could be clearer.'
+      ],
+      constructiveClosings: [
+        'Sharing this feedback constructively so service can be even better.',
+        'Hoping management takes note of scheduling pacing.'
       ]
     },
 
@@ -158,6 +201,7 @@ const REVIEWS_ENGINE = (function() {
       badge: 'Retail & Shopping',
       icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>`,
       themeColor: '#8b5cf6',
+      defaultKeywords: ['curated collection', 'helpful staff', 'fair prices', 'easy checkout'],
       chips: [
         { label: '+ Helpful staff', phrase: 'The staff was attentive and ready to help without hovering or pressure.' },
         { label: '+ Great selection', phrase: 'Impressive curation of products with lots of unique, high quality options.' },
@@ -166,19 +210,19 @@ const REVIEWS_ENGINE = (function() {
         { label: '+ Easy checkout', phrase: 'Checkout was fast, friendly, and hassle-free.' }
       ],
       openers: [
-        'Had a fantastic shopping experience here today.',
-        'Stopped in to browse and ended up finding exactly what I was looking for.',
-        'Such a wonderful store with a curated selection you do not find everywhere.',
-        'Always a pleasure shopping at this location; the customer care is superb.',
-        'Visited the store over the weekend and was so pleased with the whole experience.',
-        'One of the best shopping experiences in the area with lovely customer service.'
+        'Had a fantastic shopping experience at {NAME} today.',
+        'Stopped into {NAME} to browse and ended up finding exactly what I was looking for.',
+        '{NAME} is such a wonderful store with a curated selection you do not find everywhere.',
+        'Always a pleasure shopping at {NAME}; the customer care is superb.',
+        'Visited {NAME} over the weekend and was so pleased with the whole experience.',
+        'One of the best boutique shopping experiences in the area with lovely customer service.'
       ],
       highlights: [
-        'the staff members were so friendly, helpful, and pointed me right to what I needed.',
+        'the staff members were so friendly, knowledgeable, and pointed me right to what I needed.',
         'the merchandise is thoughtfully displayed, well-organized, and in pristine condition.',
         'they offer top-quality items at very competitive and fair prices.',
-        'the associate offered genuine product guidance without being pushy in the slightest.',
-        'the checkout process was speedy, polite, and thoughtfully packaged.'
+        'the team offered genuine product guidance without being pushy in the slightest.',
+        'the checkout process was speedy, polite, and my purchase was carefully packaged.'
       ],
       connectors: [
         'In addition,',
@@ -188,10 +232,23 @@ const REVIEWS_ENGINE = (function() {
         'Also,'
       ],
       closings: [
-        'Will definitely be returning next time I am shopping for gifts and essentials.',
-        'Five stars for wonderful customer service and fantastic products.',
-        'Highly recommend stopping by if you are in the neighborhood!',
+        'Will definitely be returning to {NAME} next time I am shopping for gifts and essentials.',
+        'Five stars for wonderful customer service and fantastic products at {NAME}.',
+        'Highly recommend stopping by {NAME} if you are in the neighborhood!',
         'A delightful local business that truly values its customers.'
+      ],
+      constructiveOpeners: [
+        'Leaving some honest feedback after visiting {NAME}.',
+        'Wanted to share my thoughts on my recent shopping trip to {NAME}.'
+      ],
+      constructiveHighlights: [
+        'the product selection is good, though finding staff assistance took a little while.',
+        'the store has great items, but a few shelf prices were missing or unclear.',
+        'checkout was a bit slow due to only one register being open.'
+      ],
+      constructiveClosings: [
+        'Sharing this feedback to help improve the store experience.',
+        'Hopefully staffing during busy hours can be adjusted.'
       ]
     },
 
@@ -200,6 +257,7 @@ const REVIEWS_ENGINE = (function() {
       badge: 'Verified Business',
       icon: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`,
       themeColor: '#2563eb',
+      defaultKeywords: ['prompt turnaround', 'transparent pricing', 'professional team', 'clear communication'],
       chips: [
         { label: '+ Polite staff', phrase: 'The team was polite, respectful, and very accommodating.' },
         { label: '+ Quick service', phrase: 'Everything was completed promptly and right on schedule.' },
@@ -208,18 +266,18 @@ const REVIEWS_ENGINE = (function() {
         { label: '+ Highly recommend', phrase: 'Would wholeheartedly recommend their services to anyone in need.' }
       ],
       openers: [
-        'Outstanding service and professionalism from beginning to end.',
-        'Had a really seamless experience working with this business recently.',
-        'I am thoroughly impressed by the responsiveness and high standard of service here.',
-        'Came across them recently and they lived up to every positive review.',
-        'It is refreshing to work with a team that truly takes pride in their work.',
-        'I recently utilized their services and the entire process was smooth and stress-free.',
+        'Outstanding service and professionalism from {NAME} from beginning to end.',
+        'Had a really seamless experience working with {NAME} recently.',
+        'I am thoroughly impressed by the responsiveness and high standard of work from {NAME}.',
+        'Came across {NAME} recently and they lived up to every positive recommendation.',
+        'It is refreshing to work with a team at {NAME} that truly takes pride in their work.',
+        'I recently utilized services from {NAME} and the entire process was smooth and stress-free.',
         'Consistently reliable, honest, and easy to deal with.'
       ],
       highlights: [
         'the team communicated clearly at every stage and answered all my questions promptly.',
-        'they delivered exactly what was promised with remarkable attention to detail.',
-        'their pricing was honest, transparent, and fair with zero hidden surprises.',
+        'they delivered exactly what was promised with remarkable attention to detail and skill.',
+        'their pricing was honest, transparent, and fair with zero hidden surprises or upsells.',
         'the staff arrived on time, was extremely courteous, and handled everything efficiently.',
         'their deep knowledge and expertise were evident right from the initial conversation.'
       ],
@@ -231,10 +289,23 @@ const REVIEWS_ENGINE = (function() {
         'They went above and beyond, and'
       ],
       closings: [
-        'I would recommend them in a heartbeat to anyone looking for dependable service.',
-        'A well-deserved 5 stars—will definitely be using their services again!',
-        'Great job by the entire team; thank you for the wonderful experience.',
+        'I would recommend {NAME} in a heartbeat to anyone looking for dependable service.',
+        'A well-deserved 5 stars—will definitely be using {NAME} again!',
+        'Great job by the entire team at {NAME}; thank you for the wonderful experience.',
         'Hard to find this level of dedication and craftsmanship these days. Highly recommended!'
+      ],
+      constructiveOpeners: [
+        'Sharing an honest review of my experience with {NAME}.',
+        'Leaving constructive feedback regarding my recent project with {NAME}.'
+      ],
+      constructiveHighlights: [
+        'the final service was adequate, but response times on emails were slightly slower than expected.',
+        'the work was completed, though there was a slight delay past the initial estimated delivery date.',
+        'the service was fine, but billing breakdown could have been communicated earlier.'
+      ],
+      constructiveClosings: [
+        'Providing this feedback to help the company enhance future client communication.',
+        'Sharing openly so the team can address process pacing.'
       ]
     }
   };
@@ -263,40 +334,69 @@ const REVIEWS_ENGINE = (function() {
   }
 
   /**
-   * Generates a unique, natural review for the specified category.
-   * Ensures that successive calls produce distinct wording.
+   * Generates a unique, natural review for the specified category, rating, and business details.
+   * Ensures that successive calls produce distinct wording while avoiding review gating.
+   *
+   * @param {string} categoryKey - 'clinic' | 'cafe' | 'salon' | 'retail' | 'general'
+   * @param {string} businessName - e.g. 'Apex Dental'
+   * @param {number} rating - 1 to 5 stars
+   * @param {Array<string>} customKeywords - optional specific keywords/details e.g. ['Dr. Sharma', 'implants']
    */
-  function generateReview(categoryKey = 'general', businessName = 'this business') {
+  function generateReview(categoryKey = 'general', businessName = 'Our Business', rating = 5, customKeywords = []) {
     const key = (categoryKey && CATEGORIES[categoryKey]) ? categoryKey.toLowerCase() : 'general';
     const cat = CATEGORIES[key];
+    const safeName = (businessName && businessName.trim()) || 'this business';
 
     let review = '';
     let attempts = 0;
 
+    // Determine if constructive feedback tone (ratings 1 to 3) or positive recommendation (ratings 4 to 5)
+    // Both flow to Google Reviews without restriction to comply with Google Anti-Gating Policy
+    const isConstructive = rating <= 3;
+
     while (attempts < 15) {
       attempts++;
-      const opener = getRandomItem(cat.openers);
-      const highlight1 = getRandomItem(cat.highlights);
-      
-      // 50% chance of combining two highlights for richer variety
-      const useDoubleHighlight = Math.random() > 0.45;
-      let bodySentence = '';
 
-      if (useDoubleHighlight) {
-        const highlight2 = getRandomItem(cat.highlights, highlight1);
-        const connector1 = getRandomItem(cat.connectors);
-        const secondaryConnectors = ['Furthermore,', 'In addition,', 'On top of that,', 'Also,'].filter(c => c !== connector1);
-        const connector2 = getRandomItem(secondaryConnectors);
-        bodySentence = ` ${connector1} ${highlight1.charAt(0).toLowerCase() + highlight1.slice(1)} ${connector2} ${highlight2.charAt(0).toLowerCase() + highlight2.slice(1)}`;
+      let opener = '';
+      let bodySentence = '';
+      let closing = '';
+
+      if (isConstructive) {
+        opener = getRandomItem(cat.constructiveOpeners || cat.openers);
+        const highlight = getRandomItem(cat.constructiveHighlights || cat.highlights);
+        bodySentence = ` ${highlight.charAt(0).toUpperCase() + highlight.slice(1)}`;
+        closing = getRandomItem(cat.constructiveClosings || cat.closings);
       } else {
-        const connector = getRandomItem(cat.connectors);
-        bodySentence = ` ${connector} ${highlight1.charAt(0).toLowerCase() + highlight1.slice(1)}`;
+        opener = getRandomItem(cat.openers);
+        const highlight1 = getRandomItem(cat.highlights);
+        
+        // 50% chance of combining two highlights for richer variety
+        const useDoubleHighlight = Math.random() > 0.4;
+
+        if (useDoubleHighlight) {
+          const highlight2 = getRandomItem(cat.highlights, highlight1);
+          const connector1 = getRandomItem(cat.connectors);
+          const secondaryConnectors = ['Furthermore,', 'In addition,', 'On top of that,', 'Also,'].filter(c => c !== connector1);
+          const connector2 = getRandomItem(secondaryConnectors);
+          bodySentence = ` ${connector1} ${highlight1.charAt(0).toLowerCase() + highlight1.slice(1)} ${connector2} ${highlight2.charAt(0).toLowerCase() + highlight2.slice(1)}`;
+        } else {
+          const connector = getRandomItem(cat.connectors);
+          bodySentence = ` ${connector} ${highlight1.charAt(0).toLowerCase() + highlight1.slice(1)}`;
+        }
+
+        // If custom real-world keywords were provided, occasionally anchor one into the highlight
+        if (customKeywords && customKeywords.length > 0 && Math.random() > 0.3) {
+          const kw = getRandomItem(customKeywords);
+          if (kw && !bodySentence.toLowerCase().includes(kw.toLowerCase())) {
+            bodySentence += ` Special mention regarding their ${kw.trim()}.`;
+          }
+        }
+
+        closing = getRandomItem(cat.closings);
       }
 
-      const closing = getRandomItem(cat.closings);
-
-      // Assemble paragraph
-      review = `${opener}${bodySentence} ${closing}`;
+      // Assemble paragraph and interpolate business name
+      review = `${opener}${bodySentence} ${closing}`.replace(/\{NAME\}/g, safeName);
 
       // Clean up punctuation quirks if any
       review = review
@@ -319,6 +419,29 @@ const REVIEWS_ENGINE = (function() {
     return review;
   }
 
+  /**
+   * Retrieves category chips merged with any custom user keywords
+   */
+  function getCategoryChips(categoryKey = 'general', customKeywords = []) {
+    const key = (categoryKey && CATEGORIES[categoryKey]) ? categoryKey.toLowerCase() : 'general';
+    const cat = CATEGORIES[key];
+    const defaultChips = [...(cat.chips || [])];
+
+    if (customKeywords && Array.isArray(customKeywords) && customKeywords.length > 0) {
+      customKeywords.forEach(kw => {
+        const cleanKw = kw.trim();
+        if (cleanKw && !defaultChips.some(c => c.label.toLowerCase().includes(cleanKw.toLowerCase()))) {
+          defaultChips.unshift({
+            label: `+ ${cleanKw}`,
+            phrase: `Really appreciated the excellent ${cleanKw}.`
+          });
+        }
+      });
+    }
+
+    return defaultChips;
+  }
+
   function getCategoryConfig(categoryKey = 'general') {
     const key = (categoryKey && CATEGORIES[categoryKey]) ? categoryKey.toLowerCase() : 'general';
     return CATEGORIES[key];
@@ -331,6 +454,7 @@ const REVIEWS_ENGINE = (function() {
   return {
     generateReview,
     getCategoryConfig,
+    getCategoryChips,
     getAllCategories
   };
 })();

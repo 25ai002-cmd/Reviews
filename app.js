@@ -1,24 +1,29 @@
 /**
- * NFC Smart Review Card System - Frontend Application Logic
- * Supports dynamic URL params, anti-spam combinatorial generator,
- * interactive keyword chips, star ratings, and the seamless "Copy & Redirect" flow.
+ * NFC Smart Review Card System - Frontend Application Logic (v2)
+ * Features:
+ * - Dynamic multi-client support with custom real-world keywords (?placeid, ?name, ?category, ?keywords)
+ * - Anti-Gating: 1-5 star selector dynamically adapts review tone while ALWAYS allowing direct Google Review posting
+ * - Pop-up blocker proof same-tab navigation via window.location.href
+ * - Enhanced anti-spam combinatorial engine with entity grounding
  */
 
 (function() {
   'use strict';
 
-  // Fallback defaults as specified in requirements
+  // Fallback defaults
   const DEFAULTS = {
     placeid: 'ChIJ67svB4SDXjkR9yp6UifRj84',
     name: 'Our Business',
-    category: 'general'
+    category: 'general',
+    keywords: []
   };
 
   // State
   let currentParams = {
     placeid: DEFAULTS.placeid,
     name: DEFAULTS.name,
-    category: DEFAULTS.category
+    category: DEFAULTS.category,
+    keywords: DEFAULTS.keywords
   };
 
   let appliedChips = new Set();
@@ -42,6 +47,7 @@
     ratingSentiment: document.getElementById('rating-sentiment'),
     toastOverlay: document.getElementById('toast-overlay'),
     toastProgress: document.getElementById('toast-progress'),
+    toastRedirectBtn: document.getElementById('toast-redirect-btn'),
     confettiCanvas: document.getElementById('confetti-canvas'),
     // Modal elements
     toggleDemoBtn: document.getElementById('toggle-demo-btn'),
@@ -49,6 +55,7 @@
     closeModalBtn: document.getElementById('close-modal-btn'),
     cfgName: document.getElementById('cfg-name'),
     cfgCategory: document.getElementById('cfg-category'),
+    cfgKeywords: document.getElementById('cfg-keywords'),
     cfgPlaceid: document.getElementById('cfg-placeid'),
     cfgFullUrl: document.getElementById('cfg-full-url'),
     copyUrlBtn: document.getElementById('copy-url-btn'),
@@ -59,19 +66,44 @@
   // Rating sentiments
   const RATING_MESSAGES = {
     5: '"Exceptional Experience! ⭐⭐⭐⭐⭐"',
-    4: '"Really Great Experience! ⭐⭐⭐⭐"',
-    3: '"Good Experience! ⭐⭐⭐"',
+    4: '"Great Experience! ⭐⭐⭐⭐"',
+    3: '"Good Experience ⭐⭐⭐"',
     2: '"Fair Experience ⭐⭐"',
-    1: '"Needs Improvement ⭐"'
+    1: '"Constructive Feedback ⭐"'
   };
 
-  // Preset sample businesses for the admin/demo modal
+  // Realistic client presets with specific real-world keywords for anti-spam grounding
   const PRESET_DATA = {
-    clinic: { name: 'Apex Dental & Wellness', category: 'clinic', placeid: 'ChIJ67svB4SDXjkR9yp6UifRj84' },
-    cafe: { name: 'Artisan Roast & Bakery', category: 'cafe', placeid: 'ChIJ67svB4SDXjkR9yp6UifRj84' },
-    salon: { name: 'Luxe Hair & Spa Lounge', category: 'salon', placeid: 'ChIJ67svB4SDXjkR9yp6UifRj84' },
-    retail: { name: 'Nordic Living Boutique', category: 'retail', placeid: 'ChIJ67svB4SDXjkR9yp6UifRj84' },
-    general: { name: 'Summit Pro Solutions', category: 'general', placeid: 'ChIJ67svB4SDXjkR9yp6UifRj84' }
+    clinic: { 
+      name: 'Dr. Sharma Dental & Wellness', 
+      category: 'clinic', 
+      placeid: 'ChIJ67svB4SDXjkR9yp6UifRj84',
+      keywords: 'Dr. Sharma, painless cleaning, spotless clinic, short wait' 
+    },
+    cafe: { 
+      name: 'Artisan Roast & Bakery', 
+      category: 'cafe', 
+      placeid: 'ChIJ67svB4SDXjkR9yp6UifRj84',
+      keywords: 'pour-over, almond croissant, friendly baristas, fast Wi-Fi' 
+    },
+    salon: { 
+      name: 'Luxe Hair & Spa Lounge', 
+      category: 'salon', 
+      placeid: 'ChIJ67svB4SDXjkR9yp6UifRj84',
+      keywords: 'Sarah, scalp massage, balayage technique, punctual appointment' 
+    },
+    retail: { 
+      name: 'Nordic Living Boutique', 
+      category: 'retail', 
+      placeid: 'ChIJ67svB4SDXjkR9yp6UifRj84',
+      keywords: 'curated gifts, helpful team, fair prices, easy checkout' 
+    },
+    general: { 
+      name: 'Summit Pro Solutions', 
+      category: 'general', 
+      placeid: 'ChIJ67svB4SDXjkR9yp6UifRj84',
+      keywords: 'David, prompt service, upfront quote, professional team' 
+    }
   };
 
   /**
@@ -84,13 +116,19 @@
     const name = searchParams.get('name')?.trim() || DEFAULTS.name;
     let category = searchParams.get('category')?.trim()?.toLowerCase() || DEFAULTS.category;
 
+    // Optional comma-separated keywords e.g. ?keywords=Dr.+Sharma,wait+time
+    const rawKeywords = searchParams.get('keywords') || searchParams.get('k') || '';
+    const keywords = rawKeywords
+      ? rawKeywords.split(',').map(s => s.trim()).filter(Boolean)
+      : [];
+
     // Validate category exists in engine, else fallback
     const validCategories = REVIEWS_ENGINE.getAllCategories();
     if (!validCategories.includes(category)) {
       category = DEFAULTS.category;
     }
 
-    currentParams = { placeid, name, category };
+    currentParams = { placeid, name, category, keywords };
   }
 
   /**
@@ -116,19 +154,24 @@
     el.categoryAvatar.style.color = catConfig.themeColor || 'var(--color-primary)';
     el.categoryAvatar.style.backgroundColor = `${catConfig.themeColor}18` || 'var(--color-primary-subtle)';
 
-    // Direct Google Review link
+    // Direct Google Review link (same-tab to prevent popup blockers)
     const targetUrl = getGoogleReviewUrl(currentParams.placeid);
     el.directGoogleLink.href = targetUrl;
+    if (el.toastRedirectBtn) {
+      el.toastRedirectBtn.href = targetUrl;
+    }
 
-    // Render keyword chips for this category
-    renderKeywordChips(catConfig.chips);
+    // Render keyword chips for this category (merged with custom keywords)
+    const chips = REVIEWS_ENGINE.getCategoryChips(currentParams.category, currentParams.keywords);
+    renderKeywordChips(chips);
 
-    // Generate initial unique review
+    // Generate initial unique review with entity grounding
     generateAndPopulateReview();
 
     // Sync modal fields
     el.cfgName.value = currentParams.name;
     el.cfgCategory.value = currentParams.category;
+    el.cfgKeywords.value = currentParams.keywords.join(', ');
     el.cfgPlaceid.value = currentParams.placeid;
     updateModalUrlPreview();
   }
@@ -197,7 +240,12 @@
    * Generate and populate review into textarea
    */
   function generateAndPopulateReview() {
-    const review = REVIEWS_ENGINE.generateReview(currentParams.category, currentParams.name);
+    const review = REVIEWS_ENGINE.generateReview(
+      currentParams.category, 
+      currentParams.name, 
+      currentRating, 
+      currentParams.keywords
+    );
     el.reviewTextarea.value = review;
     
     // Reset chip visual states
@@ -244,7 +292,8 @@
   }
 
   /**
-   * Star rating selector
+   * Star rating selector (Anti-Gating Compliant)
+   * Tapping 1 to 5 stars adapts the review tone constructively but NEVER gates or blocks the user from proceeding to Google.
    */
   function initStarRating() {
     const stars = el.starRating.querySelectorAll('.star-btn');
@@ -264,6 +313,9 @@
         });
 
         el.ratingSentiment.textContent = RATING_MESSAGES[rating] || '';
+
+        // Dynamically regenerate review text matching the selected rating tone (constructive vs positive)
+        generateAndPopulateReview();
         
         if (navigator.vibrate) {
           navigator.vibrate(30);
@@ -380,6 +432,7 @@
 
   /**
    * Primary "Copy & Redirect" Action Flow
+   * Uses same-tab navigation (window.location.href) to ensure zero pop-up blocking on mobile browsers.
    */
   async function handleCopyAndRedirect() {
     const textToCopy = el.reviewTextarea.value.trim();
@@ -400,13 +453,18 @@
     el.toastOverlay.classList.add('visible');
     el.toastOverlay.setAttribute('aria-hidden', 'false');
 
+    // Ensure fallback links are pre-armed
+    if (el.toastRedirectBtn) {
+      el.toastRedirectBtn.href = targetUrl;
+    }
+
     // Animate progress bar
     el.toastProgress.style.width = '0%';
     setTimeout(() => {
       el.toastProgress.style.width = '100%';
     }, 20);
 
-    // Redirect after 850ms so user clearly perceives the success state
+    // Redirect after 850ms via window.location.href (same-tab navigation - immune to pop-up blockers)
     setTimeout(() => {
       window.location.href = targetUrl;
     }, 850);
@@ -419,9 +477,15 @@
     const nameVal = el.cfgName.value.trim() || DEFAULTS.name;
     const catVal = el.cfgCategory.value.trim() || DEFAULTS.category;
     const placeidVal = el.cfgPlaceid.value.trim() || DEFAULTS.placeid;
+    const rawKeywords = el.cfgKeywords.value.trim();
 
     const base = window.location.origin + window.location.pathname;
-    const generatedUrl = `${base}?placeid=${encodeURIComponent(placeidVal)}&name=${encodeURIComponent(nameVal)}&category=${encodeURIComponent(catVal)}`;
+    let generatedUrl = `${base}?placeid=${encodeURIComponent(placeidVal)}&name=${encodeURIComponent(nameVal)}&category=${encodeURIComponent(catVal)}`;
+    
+    if (rawKeywords) {
+      generatedUrl += `&keywords=${encodeURIComponent(rawKeywords)}`;
+    }
+
     el.cfgFullUrl.value = generatedUrl;
   }
 
@@ -480,6 +544,7 @@
     ['input', 'change'].forEach(evt => {
       el.cfgName.addEventListener(evt, updateModalUrlPreview);
       el.cfgCategory.addEventListener(evt, updateModalUrlPreview);
+      el.cfgKeywords.addEventListener(evt, updateModalUrlPreview);
       el.cfgPlaceid.addEventListener(evt, updateModalUrlPreview);
     });
 
@@ -492,6 +557,7 @@
           el.cfgName.value = preset.name;
           el.cfgCategory.value = preset.category;
           el.cfgPlaceid.value = preset.placeid;
+          el.cfgKeywords.value = preset.keywords || '';
           updateModalUrlPreview();
         }
       });
@@ -512,9 +578,14 @@
       currentParams.name = el.cfgName.value.trim() || DEFAULTS.name;
       currentParams.category = el.cfgCategory.value.trim() || DEFAULTS.category;
       currentParams.placeid = el.cfgPlaceid.value.trim() || DEFAULTS.placeid;
+      const kwVal = el.cfgKeywords.value.trim();
+      currentParams.keywords = kwVal ? kwVal.split(',').map(s => s.trim()).filter(Boolean) : [];
 
       // Update URL without full reload
-      const newUrl = `${window.location.pathname}?placeid=${encodeURIComponent(currentParams.placeid)}&name=${encodeURIComponent(currentParams.name)}&category=${encodeURIComponent(currentParams.category)}`;
+      let newUrl = `${window.location.pathname}?placeid=${encodeURIComponent(currentParams.placeid)}&name=${encodeURIComponent(currentParams.name)}&category=${encodeURIComponent(currentParams.category)}`;
+      if (kwVal) {
+        newUrl += `&keywords=${encodeURIComponent(kwVal)}`;
+      }
       window.history.replaceState({}, '', newUrl);
 
       applyClientConfig();
